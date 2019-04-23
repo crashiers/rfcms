@@ -1,0 +1,94 @@
+<style lang="less">
+page{
+  padding-bottom: 100rpx;
+}
+.cu-bar .content image{
+  height: 60rpx;
+  width: 240rpx;
+}
+
+</style>
+<template>
+  <view>
+
+
+<view class="cu-custom" style="height:{{CustomBar}}px;">
+  <view class="cu-bar fixed bg-gradual-green" style="height:{{CustomBar}}px;padding-top:{{StatusBar}}px;">
+    <navigator class='action' open-type="navigateBack" delta="1" hover-class="none">
+      <text class='icon-back'></text> 
+      积分攻略
+    </navigator>
+    <view class='action'>
+      <!-- 专栏：自我提供 -->
+    </view>
+  </view>
+</view>
+
+<view class="cu-list menu card-menu margin-top-xl margin-bottom-xl shadow-lg">
+  
+
+  <view class="cu-item arrow" wx:for="{{tasks}}" wx:key @tap="click({{item}})" >
+    <view class='content'>
+      <text class='icon-{{item.icon}} text-{{item.iconcolor}}'></text>
+      <text class='text-grey'>{{item.name}}</text>
+    </view>
+    <view class='action'>
+      <text class='text-grey text-sm'>{{item.intro}}</text>
+    </view>
+  </view>
+
+</view>
+
+</view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import commApi from '../../api/comm'
+  export default class Guide extends wepy.page {
+    config = {
+      navigationBarTitleText: '每天自律打卡',
+    }
+
+
+    components = {
+    };
+
+
+    data = {
+      isCard:true,
+      StatusBar:0,
+      CustomBar:0,
+      tasks:[],
+    }
+
+    methods = {
+      goto(to){
+          console.log('to',to)
+          wepy.navigateTo({url:to});
+      },
+      click(item){
+        if(item.wxto){
+          wepy.navigateTo({url:item.wxto});
+          wepy.switchTab({url:item.wxto});
+        }
+      },
+    }
+
+
+    async onLoad(query) {
+        this.StatusBar= wepy.$instance.globalData.StatusBar
+        this.CustomBar= wepy.$instance.globalData.CustomBar
+        this.tasks = await commApi.GetUserTasks() // 获取当前用户
+        this.$apply()
+    }
+    // 下拉刷新
+    async onPullDownRefresh() {
+        this.tasks = await commApi.GetUserTasks() // 获取当前用户
+        wepy.stopPullDownRefresh()
+        this.$apply()
+    }
+
+  }
+
+</script>

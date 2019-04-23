@@ -1,0 +1,13 @@
+{
+  "description": "a wepy cms app",
+  "setting": {
+    "urlCheck": true,
+    "es6": false,
+    "postcss": false,
+    "minified": false
+  },
+  "compileType": "wxa94ddd94358b2d1d",
+  "appid": "wxcmsmanage",
+  "projectname": "wxcms",
+  "miniprogramRoot": "./dist"
+}

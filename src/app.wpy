@@ -1,0 +1,253 @@
+<style>
+
+@import "./style/icon.wxss";
+@import "./style/colorui.wxss";
+
+.nav-list {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0px 40rpx 0px;
+  justify-content: space-between;
+}
+
+.nav-li {
+  padding: 30rpx;
+  border-radius: 12rpx;
+  width: 45%;
+  margin: 0 2.5% 40rpx;
+  background-image: url(https://image.weilanwl.com/color2.0/cardBg.png);
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  z-index: 1;
+}
+
+.nav-li::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  background-color: inherit;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  bottom: -10%;
+  border-radius: 10rpx;
+  opacity: 0.2;
+  transform: scale(0.9, 0.9);
+}
+
+.nav-li.cur {
+  color: #fff;
+  background: rgb(94, 185, 94);
+  box-shadow: 4rpx 4rpx 6rpx rgba(94, 185, 94, 0.4);
+}
+
+.nav-title {
+  font-size: 32rpx;
+  font-weight: 300;
+}
+
+.nav-title::first-letter {
+  font-size: 40rpx;
+  margin-right: 4rpx;
+}
+
+.nav-name {
+  font-size: 28rpx;
+  text-transform: Capitalize;
+  margin-top: 20rpx;
+  position: relative;
+}
+
+.nav-name::before {
+  content: "";
+  position: absolute;
+  display: block;
+  width: 40rpx;
+  height: 6rpx;
+  background: #fff;
+  bottom: 0;
+  right: 0;
+  opacity: 0.5;
+}
+
+.nav-name::after {
+  content: "";
+  position: absolute;
+  display: block;
+  width: 100rpx;
+  height: 1px;
+  background: #fff;
+  bottom: 0;
+  right: 40rpx;
+  opacity: 0.3;
+}
+
+.nav-name::first-letter {
+  font-weight: bold;
+  font-size: 36rpx;
+  margin-right: 1px;
+}
+
+.nav-li text {
+  position: absolute;
+  right: 30rpx;
+  top: 30rpx;
+  font-size: 52rpx;
+  width: 60rpx;
+  height: 60rpx;
+  text-align: center;
+  line-height: 60rpx;
+}
+
+.text-light {
+  font-weight: 300;
+}
+
+@keyframes show {
+  0% {
+    transform: translateY(-50px);
+  }
+
+  60% {
+    transform: translateY(40rpx);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+@-webkit-keyframes show {
+  0% {
+    transform: translateY(-50px);
+  }
+
+  60% {
+    transform: translateY(40rpx);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+</style>
+
+<script>
+import wepy from 'wepy'
+import 'wepy-async-function'
+
+export default class extends wepy.app {
+  config = {
+    pages: [
+      // 'pages/html',
+      'pages/index/index',
+      'pages/topic/index',
+      'pages/user/index',
+      'pages/user/footprint',
+      'pages/user/like',
+      'pages/user/goods',
+      'pages/user/order',
+      'pages/user/guide',
+      'pages/user/sign',
+      'pages/user/task',
+      'pages/user/team',
+      'pages/team/join',
+      'pages/user/pointlog',
+      'pages/user/exchange',
+      'pages/topic/list',
+      'pages/article/info',
+    ],
+    
+    window: {
+      backgroundTextStyle: 'light',
+      navigationBarBackgroundColor: '#fff',
+      navigationBarTitleText: 'Read Follow demo',
+      navigationBarTextStyle: 'white',
+      navigationStyle: "custom",
+      enablePullDownRefresh: true,
+    },
+
+
+    "usingComponents": {},
+    "tabBar": {
+      "custom": true,
+      "color": "#aaa",
+      "selectedColor": "#39b54a",
+      "borderStyle": "black",
+      "backgroundColor": "#ffffff",
+      "list": [
+        {
+          "pagePath": "pages/index/index",
+          "iconPath": "/images/tabbar/basics.png",
+          "selectedIconPath": "/images/tabbar/basics_cur.png",
+          "text": "推荐"
+        },
+        {
+          "pagePath": "pages/topic/index",
+          "iconPath": "/images/tabbar/component.png",
+          "selectedIconPath": "/images/tabbar/component_cur.png",
+          "text": "专题"
+        },
+        {
+          "pagePath": "pages/user/index",
+          "iconPath": "/images/tabbar/about.png",
+          "selectedIconPath": "/images/tabbar/about_cur.png",
+          "text": "我的"
+        }
+      ]
+    }
+  }
+  constructor () {
+    super()
+    this.use('requestfix')
+    this.use('promisify')
+    this.intercept('request', {
+      config (p) {
+        p.header = this.createAuthHeader()
+        return p
+      }
+    })
+  }
+  createAuthHeader () {
+    const token = wepy.$instance.globalData.token
+    const header = {}
+    header['Accept'] = 'application/json'
+    if (token) {
+      header['Authorization'] = 'Bearer ' + token
+    }
+    
+    const fromid = wepy.$instance.globalData.fromid
+    if (fromid) {
+      header['Fromid'] = fromid
+    }
+    return header
+  }
+
+  globalData = {
+    session: '',
+    ads: [],
+    carousels: [],
+    uid: 0,//用户分享时使用
+    fromid: 0,//从分享处来使用
+    token: '',
+    appid: 'wxa94ddd94358b2d1d',
+    baseUrl: 'http://cms.cc:626/api/v1', 
+    // baseUrl: 'http://wxcmsmanage.oo/api/v1', 
+    // baseUrl: 'https://wxcms.readfollow.com/api', 
+    userInfo: null
+  
+  }
+  
+  async onLaunch (p) {
+    // console.log(p)
+    let e = await wepy.getSystemInfo()
+    wepy.$instance.globalData.StatusBar =  e.statusBarHeight;
+    wepy.$instance.globalData.CustomBar =   e.platform == 'android' ? e.statusBarHeight + 50 : e.statusBarHeight + 45;
+    wepy.$instance.globalData.Custom = wx.getMenuButtonBoundingClientRect();
+    wepy.$instance.globalData.uid = await wepy.getStorageSync('uid')
+    wepy.$instance.globalData.fromid = p.query.fromid //记录用户来源
+  }
+
+}
+</script>

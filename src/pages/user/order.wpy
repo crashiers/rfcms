@@ -1,0 +1,177 @@
+<style lang="less">
+page{
+  // padding-bottom: 100rpx;
+}
+.cu-bar .content image{
+  height: 60rpx;
+  width: 240rpx;
+}
+
+</style>
+<template>
+  <view>
+
+<view class="cu-custom" style="height:{{CustomBar}}px;">
+  <view class="cu-bar fixed bg-gradual-green" style="height:{{CustomBar}}px;padding-top:{{StatusBar}}px;">
+    <navigator class='action' open-type="navigateBack" delta="1" hover-class="none">
+      <text class='icon-back'></text> 
+      我的兑换卷
+    </navigator>
+    <view class='action'>
+      <!-- 专栏：自我提供 -->
+    </view>
+  </view>
+</view>
+
+<view class="cu-bar bg-white" wx:if="{{orders.length}}">
+  <view class='action'>
+    <text class='icon-title text-green'></text>
+    <text>兑换卷请尽早使用，以免过期作废。</text>
+  </view>
+</view>
+<view class="cu-list menu menu-avatar">
+  <view class="cu-item grayscale"  wx:for="{{orders}}" wx:key >
+    <view class="cu-avatar radius lg" style="background-image:url({{item.cover}});"></view>
+    <view class='content'>
+      <view>
+        {{item.name}}<view class="cu-tag bg-white">×{{item.num}}</view>
+      </view>
+      <view class='text-gray text-sm' wx:if="{{item.delivery_at}}">
+        已在 {{item.delivery_at}} 时使用
+      </view>
+      <view class='text-gray text-sm' wx:if="{{!item.delivery_at}}">
+        请在 {{item.lower_at}} 前使用
+      </view>
+    </view>
+    <view class='action' wx:if="{{item.canuse}}">
+      <button class='cu-btn round bg-green shadow' @tap="goto({{item.wxto}})">使用</button>
+    </view>
+    <!-- <view class='action'>
+      <view class="cu-tag round bg-red sm">x 5</view>
+      <view class='text-grey text-xs'>已使用</view>
+    </view> -->
+  </view>
+</view>
+
+    <view wx:if="{{loadstatus}}" class="cu-load bg-gray {{loadstatus==1?'loading':'over'}}"></view>
+
+</view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import commApi from '../../api/comm'
+  export default class Order extends wepy.page {
+    config = {
+      navigationBarTitleText: '我的足迹',
+    }
+
+    components = {
+    };
+
+
+    data = {
+      isCard:false,
+      StatusBar:0,
+      CustomBar:0,
+      Custom:0,
+      page:0,
+      loadstatus:1,
+      gifttips:false,
+      showPointTips:false,
+      user:[],
+      orders:[]
+    }
+
+
+    methods = {
+      goto(to){
+          wepy.navigateTo({url:to});
+      },
+      gift(){ // 点击礼品按钮，去订单列表
+          wepy.navigateTo({url:'/pages/user/order'});
+      },
+      pointtips(){ // 积分明细
+        this.showPointTips = true
+      },
+      hidepointtips(){ // 收起积分明细
+        this.showPointTips = false
+      },
+      async buy(item){
+        // todo 提醒用户确认兑换
+        var tips = `兑换《${item.name}》需消耗${item.point}积分，确认要兑换吗?`
+        let res = await wepy.showModal({
+            title: '提醒',
+            content: tips,
+            showCancel: true
+        });
+        if(res.confirm){
+          // 用户确认要兑换这个商品
+          let data = await commApi.BuyGoods(item.id,1)
+          if(data.message){
+            let res = await wepy.showModal({content: data.message, showCancel: false});
+          }else if(data.id){
+            let res = await wepy.showModal({content: '兑换成功，请在点击《我的礼品》后根据引导进行领取！', showCancel: false});
+            this.gifttips = true
+            this.user.point - item.point
+            this.user.current_point - item.current_point
+            this.$apply()
+          }
+        }
+      },
+    }
+
+    async onLoad() {
+      
+        this.StatusBar= wepy.$instance.globalData.StatusBar
+        this.CustomBar= wepy.$instance.globalData.CustomBar
+        this.Custom= wepy.$instance.globalData.Custom
+        this.user = await commApi.GetMe() // 获取当前用户
+        if(this.user.lock_at){
+          // todo 用户被锁定了，不允许操作
+        }
+        this.orders = await commApi.GetOrders(1)
+        this.page = 2;
+        if(this.orders.length){
+          this.loadstatus = 0
+        }else{
+          this.loadstatus = 2
+        }
+        this.$apply()
+    }
+
+    
+    async onReachBottom(){
+      this.loadstatus = 1
+      this.$apply()
+      let orders = await commApi.GetOrders(this.page)
+      if(orders.length){
+        this.page ++
+        this.orders = [...this.orders,...orders]
+        this.loadstatus = 0
+      }else{ 
+        this.loadstatus = 2
+      }
+      this.$apply()
+    }
+        
+    // 下拉刷新
+    async onPullDownRefresh() {
+        this.loadstatus = 1
+        this.orders = []
+        this.$apply()
+        this.orders = await commApi.GetOrders(1)
+        this.page = 2;
+        wepy.stopPullDownRefresh()
+        if(this.orders.length){
+          this.loadstatus = 0
+        }else{
+          this.loadstatus = 2
+        }
+        this.$apply()
+    }
+
+
+  }
+
+</script>

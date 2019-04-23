@@ -1,0 +1,153 @@
+<style lang="less">
+page{
+  // padding-bottom: 100rpx;
+}
+.cu-bar .content image{
+  height: 60rpx;
+  width: 240rpx;
+}
+
+</style>
+<template>
+  <view>
+
+
+<view class="cu-custom" style="height:{{CustomBar}}px;">
+  <view class="cu-bar fixed bg-gradual-green" style="height:{{CustomBar}}px;padding-top:{{StatusBar}}px;">
+    <navigator wx:if="{{!fromid}}" class='action' open-type="navigateBack" delta="1" hover-class="none">
+      <text class='icon-back'></text> 
+      {{topic.name}}
+    </navigator>
+     <navigator wx:if="{{fromid}}" class='action' url="/pages/index/index" open-type="switchTab" hover-class="none">
+      <text class='icon-back'></text> 
+      返回首页
+    </navigator>
+    <view class='action'>
+    </view>
+  </view>
+</view>
+
+<Ad1 position="7" :ads.sync="ads"/>
+<view class="cu-card article no-card}}">
+  <view wx:for="{{articles}}" wx:key class="cu-item shadow"  @tap="goto({{item.wxto}})">
+    <view class="title">{{item.title}}</view>
+    <view class="content">
+      <image wx:if="{{item.cover}}" src="{{item.cover}}" mode="aspectFill"></image>
+      <view class="desc">
+        <view class='text-content' wx:if="{{item.intro}}"> {{item.intro}}</view>
+        <view class="text-gray">
+            <text class="icon-attentionfill"></text> {{item.view}}
+            <text class="icon-appreciatefill"></text> {{item.liked}}
+            <text class="icon-messagefill"></text> {{item.commented}}
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
+<view wx:if="{{loadstatus}}" class="cu-load bg-gray {{loadstatus==1?'loading':'over'}}"></view>
+
+<Ad2 position="8" :ads.sync="ads"/>
+</view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import commApi from '../../api/comm'
+  import ad from '../../components/ad'
+  export default class Index extends wepy.page {
+    config = {
+      navigationBarTitleText: '专题文章列表',
+    }
+
+    components = {
+      Ad1:ad,
+      Ad2:ad,
+    };
+
+
+    data = {
+      isCard:true,
+      StatusBar:0,
+      CustomBar:0,
+      Custom:0,
+      fromid:0,
+      loadstatus:1,
+      id:0,
+      page:1,
+      topic:[],
+      articles: [],
+      ads: [],
+    }
+
+
+    methods = {
+      goto(to){
+          console.log('to',to)
+          wepy.navigateTo({url:to});
+      },
+      click(){},
+    }
+
+    async onLoad(query) {
+      this.id = query.id
+      this.fromid = query.fromid
+      this.StatusBar= wepy.$instance.globalData.StatusBar
+      this.CustomBar= wepy.$instance.globalData.CustomBar
+      this.Custom= wepy.$instance.globalData.Custom
+      this.ads = await commApi.GetAds()
+      this.topic = await commApi.GetTopicInfo(this.id)
+      this.articles = await commApi.GetTopicArticles(this.id,1)
+      this.page = 2;
+      if(this.articles.length){
+        this.loadstatus = 0 
+      }else{
+        this.loadstatus = 2
+      }
+      this.$apply()
+    }
+
+    async onReachBottom(){
+      this.loadstatus = 1 
+      this.$apply()
+      let articles = await commApi.GetTopicArticles(this.id,this.page)
+      if(articles.length){
+        this.page ++
+        this.articles = [...this.articles,...articles]
+        this.loadstatus = 0 
+      }else{
+        this.loadstatus = 2
+      }
+      this.$apply()
+    }
+        
+    // 下拉刷新
+    async onPullDownRefresh() {
+      wepy.stopPullDownRefresh()
+      this.loadstatus = 1 
+      this.articles = []
+      this.$apply()
+      this.articles = await commApi.GetTopicArticles(this.id,1)
+      this.page = 2;
+      this.loadstatus = 0 
+      this.$apply()
+    }
+
+    onShareAppMessage(res) {
+        return {
+            title: this.topic.name,
+            // title: '觉得这个专题的文章不错，分享给你，快来看看吧。',
+            path: '/pages/topic/list?id='+this.id+'&fromid=' + wepy.$instance.globalData.uid,
+            success: function(res) {
+                // 转发成功
+                console.log(res)
+            },
+            fail: function(res) {
+                console.log(res)
+                // 转发失败
+            }
+        }
+    }
+
+  }
+
+</script>

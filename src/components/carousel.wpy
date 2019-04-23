@@ -1,0 +1,50 @@
+<style type="less">
+</style>
+<template>
+<view>
+    <swiper wx:if="{{swipers.length}}" class="screen-swiper round-dot" indicator-dots="true" circular="true" autoplay="true" interval="5000" duration="500">
+      <swiper-item wx:for="{{swipers}}" wx:key    @tap="click({{item}})">
+        <image src="{{item.cover}}" mode='aspectFill'></image>
+      </swiper-item>
+    </swiper>
+</view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import commApi from '../api/comm'
+
+  export default class Carousel extends wepy.component {
+    props = {
+      position: String,
+      carousels: Array
+    }
+    data = {
+      // carousels: [],
+    }
+
+    methods = {
+      async click() {
+        
+      },
+    }
+    async onLoad () {
+      // console.log('onLoad',this.position)
+      // // this.carousels = await commApi.GetCarousels()
+      // this.$apply()
+    }  // 在Page和Component共用的生命周期函数
+
+    computed = {
+        swipers () {
+          var list = []
+          if(this.carousels){
+            this.carousels.forEach((v)=>{
+              if(this.position == v.position){
+                list = [...list,v]
+              }
+            })
+          }
+          return  list
+        }
+    };
+  }
+</script>
