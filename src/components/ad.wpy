@@ -8,18 +8,50 @@
 
 
     <repeat wx:for="{{spreads}}" wx:key>
-      
-      <view @tap="click({{item}})" wx:if="{{item.cover}}" class="padding radius shadow bg-white" >
-        <view>
-        {{item.text}}
+      <block wx:if="{{item.genre==0}}">
+        
+        <view @tap="click({{item}})" wx:if="{{!item.cover}}" class="padding radius shadow bg-white" >
+          <view>
+          {{item.text}}
+          </view>
         </view>
-      </view>
 
-      <view @tap="click({{item}})" wx:if="{{item.cover}}" class="padding-xl radius shadow-blur bg-green bg-img" style="background-image:url({{item.cover}});">
-        <view>
-        {{item.text?item.text:''}}
+        <view @tap="click({{item}})" wx:if="{{item.cover}}" class="padding-xl radius shadow-blur bg-green bg-img" style="background-image:url({{item.cover}});">
+          <view>
+          {{item.text?item.text:''}}
+          </view>
         </view>
-      </view>
+
+      </block>
+
+
+      <block wx:if="{{item.genre== 1 ||item.genre==4 || item.genre==7}}">
+        <!-- 1,4,7 图片类型的-->
+        <view @tap="click({{item}})" class="padding-xl radius shadow-blur bg-green bg-img" style="background-image:url({{item.cover}});">
+          <view>
+          {{item.text?item.text:''}}
+          </view>
+        </view>
+      </block>
+
+      <block wx:if="{{item.genre== 3 ||item.genre==6 || item.genre==9}}">
+        <!-- 3,6,9 todo 图文类的-->
+         <view @tap="click({{item}})" wx:if="{{item.cover}}" class="padding-xl radius shadow-blur bg-green bg-img" style="background-image:url({{item.cover}});">
+          <view>
+          {{item.text?item.text:''}}
+          </view>
+        </view>
+      </block>
+
+      <block wx:if="{{item.genre== 2 ||item.genre==5 || item.genre==8}}">
+        <!-- 2,5,8 文字类型的-->
+        <view @tap="click({{item}})" class="padding radius shadow bg-white" >
+          <view>
+          {{item.text}}
+          </view>
+        </view>
+        
+      </block>
 
 
     </repeat>
@@ -45,6 +77,7 @@
     methods = {
       async  click(item){
         console.log('click(item)',item)
+
         // todo 
         if(item.genre==1 ||item.genre==2 ||item.genre==3){ //1图片链接、2文字链接、3图文链接
 
